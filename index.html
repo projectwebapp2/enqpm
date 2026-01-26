@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ตรวจสอบสิทธิเลือกตั้ง ส.ส.</title>
+    <title>ตรวจสอบสิทธิออกเสียงประชามติ</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    
+    <link rel="preconnect" href="https://cdn.tailwindcss.com">
+
     <!-- Google Fonts: Sarabun -->
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
     
@@ -22,35 +23,16 @@
 
     <style>
         * { -webkit-tap-highlight-color: transparent; }
-        body {
-            font-family: 'Sarabun', sans-serif;
-            background-color: #f0fdf4;
-            min-height: 100vh;
-            overscroll-behavior-y: none;
-        }
+        body { font-family: 'Sarabun', sans-serif; background-color: #f0fdf4; min-height: 100vh; overscroll-behavior-y: none; }
         .swal2-popup { font-family: 'Sarabun', sans-serif !important; }
-        .pastel-card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid #d1fae5;
-        }
+        .pastel-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid #d1fae5; }
         .fade-in-up { animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .loader {
-            border: 3px solid rgba(255,255,255,0.3);
-            border-top: 3px solid #ffffff;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            animation: spin 0.8s linear infinite;
-            display: none;
-            margin: 0 auto;
-        }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* ปรับความเร็ว Spinner ตรงนี้ครับ จาก 0.8s เป็น 0.4s */
+        .loader { border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid #ffffff; border-radius: 50%; width: 20px; height: 20px; animation: spin 0.4s linear infinite; display: none; margin: 0 auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
         button { touch-action: manipulation; }
     </style>
 </head>
@@ -63,8 +45,8 @@
             <div class="inline-flex items-center justify-center p-3 rounded-2xl bg-white border border-emerald-100 shadow-sm mb-3">
                 <i class="fa-solid fa-check-to-slot text-3xl text-emerald-500"></i>
             </div>
-            <h1 class="text-2xl font-bold text-emerald-800 tracking-tight">ตรวจสอบสิทธิเลือกตั้ง ส.ส.</h1>
-            <p class="text-emerald-600 text-sm font-medium">ระบบค้นหาข้อมูลรายชื่อผู้มีสิทธิเลือกตั้งล่วงหน้า</p>
+            <h1 class="text-2xl font-bold text-emerald-800 tracking-tight">ตรวจสอบสิทธิออกเสียงประชามติ</h1>
+            <p class="text-emerald-600 text-sm font-medium">ระบบค้นหาข้อมูลรายชื่อผู้มีสิทธิออกเสียงประชามตินอกเขต</p>
         </div>
 
         <!-- Search Card -->
@@ -114,11 +96,10 @@
     </div>
 
     <script>
-        // ==========================================
-        // ตั้งค่า URL ของ Google Apps Script Web App ที่นี่
-        // ==========================================
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx11MgCag98eYeN6CMk3WgwMzwJ1nvMfiauHRU-IVo93BBbGH8HNjSLsFSiUtpCpz7N/exec'; //วาง_URL_จาก_GOOGLE_APPS_SCRIPT_ที่นี่ 
-        // ตัวอย่าง: 'https://script.google.com/macros/s/AKfycbx.../exec'
+        // **********************************************************
+        // ตั้งค่า URL ของ Web App ที่คุณ Deploy (ต้องลงท้ายด้วย /exec)
+        // **********************************************************
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxGSEzQDZ6W5k1HTbYHnGvDcuH-GB77wjGKsreCjY--GmM2ghL_x0V-vixPe0nsfmHuzA/exec'; 
 
         function validateInput(input) {
             input.value = input.value.replace(/[^0-9]/g, '');
@@ -141,6 +122,7 @@
             resultContainer.innerHTML = '';
             notFoundArea.classList.add('hidden');
 
+            // Validate ความยาว
             if (query.length !== 13) {
                 Swal.fire({
                     icon: 'warning',
@@ -152,15 +134,6 @@
                 });
                 return;
             }
-            
-            if (WEB_APP_URL.includes('วาง_URL')) {
-                 Swal.fire({
-                    icon: 'error',
-                    title: 'Config Error',
-                    text: 'กรุณาใส่ Web App URL ในโค้ด JavaScript ก่อนใช้งาน',
-                });
-                return;
-            }
 
             // Loading State
             btnText.style.display = 'none';
@@ -169,8 +142,9 @@
             submitBtn.classList.add('opacity-80');
 
             try {
-                // เปลี่ยนจาก google.script.run เป็น fetch
-                const response = await fetch(`${WEB_APP_URL}?q=${query}`);
+                // เรียก API ด้วย fetch
+                // Google Apps Script Redirects: ต้องใช้ redirect: 'follow' (เป็นค่า default อยู่แล้ว)
+                const response = await fetch(`${API_URL}?q=${encodeURIComponent(query)}`);
                 
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
@@ -178,13 +152,13 @@
 
                 const data = await response.json();
 
-                // Clear Loading State
+                // ปิด Loading State
                 btnText.style.display = 'block';
                 loader.style.display = 'none';
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('opacity-80');
 
-                // Logic การแสดงผล
+                // ตรวจสอบสถานะที่ส่งกลับจาก API
                 if (data.status === 'success') {
                     if (navigator.vibrate) navigator.vibrate(20);
                     searchInput.value = ''; 
@@ -198,16 +172,16 @@
                     notFoundArea.classList.remove('hidden');
                     if (navigator.vibrate) navigator.vibrate(50);
                 } else {
-                    showError(data.message || 'เกิดข้อผิดพลาดในการดึงข้อมูล');
+                    showError(data.message || 'เกิดข้อผิดพลาดไม่ทราบสาเหตุ');
                 }
 
             } catch (error) {
-                console.error(error);
+                console.error('Error:', error);
                 btnText.style.display = 'block';
                 loader.style.display = 'none';
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('opacity-80');
-                showError('ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้');
+                showError('ไม่สามารถเชื่อมต่อกับฐานข้อมูลได้ กรุณาตรวจสอบลิงก์ API หรือลองใหม่อีกครั้ง');
             }
         }
 
@@ -239,7 +213,7 @@
                             <h3 class="text-lg font-bold text-emerald-900 leading-tight">
                                 ${data.full_name}
                             </h3>
-                            <span class="text-xs text-emerald-500 font-medium bg-emerald-50 px-2 py-0.5 rounded-md mt-1 inline-block">ผู้มีสิทธิเลือกตั้ง</span>
+                            <span class="text-xs text-emerald-500 font-medium bg-emerald-50 px-2 py-0.5 rounded-md mt-1 inline-block">ผู้มีสิทธิออกเสียง</span>
                         </div>
                     </div>
 
@@ -256,7 +230,7 @@
                             <span class="font-bold text-emerald-800 text-lg line-clamp-1">${data.home_province}</span>
                         </div>                        
                         <div class="bg-slate-50 p-2.5 rounded-xl text-center border border-slate-100">
-                            <span class="block text-xs text-slate-500 mb-1">เขตเลือกตั้ง</span>
+                            <span class="block text-xs text-slate-500 mb-1">เขตที่มีสิทธิ</span>
                             <span class="font-bold text-emerald-800 text-lg">${data.election_district || '-'}</span>
                         </div>
                     </div>
@@ -264,20 +238,17 @@
                     <!-- Polling Station Details -->
                     <div class="space-y-3 pt-2 border-t border-slate-50">
                         <div>
-                            <p class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1"><i class="fa-solid fa-location-dot mr-1"></i> สถานที่เลือกตั้ง</p>
+                            <p class="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1"><i class="fa-solid fa-location-dot mr-1"></i> สถานที่ใช้สิทธิออกเสียง</p>
                             <p class="text-emerald-900 font-bold text-lg leading-snug">${data.polling_station}</p>
                             <p class="text-sm text-emerald-600 mt-1">${data.registered_province || ''}</p>
                         </div>
                         
                         <div class="flex gap-2 pt-2">
                              <div class="flex-1 bg-white px-3 py-2 rounded-lg border border-slate-200 flex justify-between items-center shadow-sm">
-                                <span class="text-xs text-slate-500 font-bold">ชุดที่</span> 
-                                <span class="text-base font-bold text-emerald-700">${data.unit_no || '-'}</span>
+                                <span class="text-xl text-slate-500 font-bold">ชุดที่/หน่วยที่</span> 
+                                <span class="text-2xl font-bold text-emerald-700">${data.unit_no || '-'}</span>
                             </div>
-                            <div class="flex-1 bg-white px-3 py-2 rounded-lg border border-slate-200 flex justify-between items-center shadow-sm">
-                                <span class="text-xs text-slate-500 font-bold">รหัสเขตเลือกตั้ง</span> 
-                                <span class="text-base font-bold text-emerald-700">${data.location_code || '-'}</span>
-                            </div>
+
                         </div>
                     </div>
                 </div>
